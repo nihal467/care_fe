@@ -1,5 +1,5 @@
 #build-stage
-FROM node:lts-buster-slim as build-stage
+FROM --platform=linux/amd64 node:lts-buster-slim as build-stage
 
 WORKDIR /app
 
