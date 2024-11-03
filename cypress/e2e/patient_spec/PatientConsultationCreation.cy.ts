@@ -35,7 +35,7 @@ describe("Patient Consultation in multiple combination", () => {
   const patientWeight = "70";
   const patientHeight = "170";
   const medicineOne = "DOLOLUP";
-  const patientIpNumber = Math.random().toString(36).substring(7);
+  const patientIpNumber = `${Math.floor(Math.random() * 90 + 10)}/${Math.floor(Math.random() * 9000 + 1000)}`;
 
   before(() => {
     loginPage.loginAsDisctrictAdmin();
@@ -86,7 +86,7 @@ describe("Patient Consultation in multiple combination", () => {
     patientConsultationPage.selectPatientPrincipalDiagnosis(diagnosis4);
     patientTreatmentPlan.clickAddProcedure();
     patientTreatmentPlan.typeProcedureName(procedureName);
-    patientTreatmentPlan.typeProcedureTime("2024-02-22T12:30");
+    patientTreatmentPlan.typeProcedureTime("220220241230");
     patientTreatmentPlan.typeTreatmentPlan(patientTreatment);
     patientTreatmentPlan.typePatientGeneralInstruction(generalInstruction);
     patientTreatmentPlan.typeSpecialInstruction(specialInstruction);
@@ -94,7 +94,7 @@ describe("Patient Consultation in multiple combination", () => {
     cy.submitButton("Create Consultation");
     // the above submit should fail as IP number is missing
     patientConsultationPage.typePatientNumber(patientIpNumber);
-    patientConsultationPage.selectBed("Dummy Bed 1");
+    patientConsultationPage.selectBed("Dummy Bed 6");
     cy.submitButton("Create Consultation");
     cy.verifyNotification("Consultation created successfully");
     // Below code for the prescription module only present while creating a new consultation
@@ -182,12 +182,12 @@ describe("Patient Consultation in multiple combination", () => {
     patientConsultationPage.typeCauseOfDeath("Cause of Death");
     patientConsultationPage.typePatientConsultationDate(
       "#death_datetime",
-      "2024-02-22T12:45",
+      "220220241230",
     );
     patientConsultationPage.typeDeathConfirmedBy(doctorName);
     patientConsultationPage.typePatientConsultationDate(
       "#encounter_date",
-      "2024-02-22T12:30",
+      "220220241230",
     );
     cy.submitButton("Create Consultation");
     cy.verifyNotification(
@@ -245,7 +245,7 @@ describe("Patient Consultation in multiple combination", () => {
     );
     patientConsultationPage.typePatientConsultationDate(
       "#icu_admission_date",
-      "2024-02-23T12:30",
+      "230220241230",
     );
     // add investigation
     patientInvestigation.clickAddInvestigation();

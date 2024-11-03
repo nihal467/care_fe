@@ -1,7 +1,7 @@
-import { AREACODES, IN_LANDLINE_AREA_CODES } from "../Common/constants";
-import phoneCodesJson from "../Common/static/countryPhoneAndFlags.json";
+import { AREACODES, IN_LANDLINE_AREA_CODES } from "@/common/constants";
+import phoneCodesJson from "@/common/static/countryPhoneAndFlags.json";
 import dayjs from "./dayjs";
-import { PatientModel } from "../Components/Patient/models";
+import { PatientModel } from "@/components/Patient/models";
 
 interface ApacheParams {
   age: number;
@@ -104,6 +104,16 @@ export const relativeDate = (date: DateLike, withoutSuffix = false) => {
 
 export const formatName = (user: { first_name: string; last_name: string }) => {
   return `${user.first_name} ${user.last_name}`;
+};
+
+export const formatDisplayName = (user: {
+  first_name: string;
+  last_name: string;
+  username: string;
+}) => {
+  return user.first_name && user.last_name
+    ? `${user.first_name} ${user.last_name}`
+    : user.first_name || user.username || "User";
 };
 
 export const relativeTime = (time?: DateLike) => {

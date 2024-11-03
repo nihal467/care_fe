@@ -3,11 +3,11 @@ import { PatientPage } from "../../pageobject/Patient/PatientCreation";
 import FacilityPage from "../../pageobject/Facility/FacilityCreation";
 import { generatePhoneNumber } from "../../pageobject/utils/constants";
 import PatientTransfer from "../../pageobject/Patient/PatientTransfer";
-import PatientExternal from "../../pageobject/Patient/PatientExternal";
 import PatientInsurance from "../../pageobject/Patient/PatientInsurance";
 import PatientMedicalHistory from "../../pageobject/Patient/PatientMedicalHistory";
 
 const yearOfBirth = "2001";
+const isHCXEnabled = Cypress.env("ENABLE_HCX");
 
 const calculateAge = () => {
   const currentYear = new Date().getFullYear();
@@ -25,7 +25,7 @@ const getRelativeDateString = (deltaDays = 0) => {
       month: "2-digit",
       year: "numeric",
     })
-    .replace("/", "");
+    .replace(/\//g, "");
 };
 
 describe("Patient Creation with consultation", () => {
@@ -33,7 +33,6 @@ describe("Patient Creation with consultation", () => {
   const patientPage = new PatientPage();
   const facilityPage = new FacilityPage();
   const patientTransfer = new PatientTransfer();
-  const patientExternal = new PatientExternal();
   const patientInsurance = new PatientInsurance();
   const patientMedicalHistory = new PatientMedicalHistory();
   const phone_number = generatePhoneNumber();
@@ -69,7 +68,6 @@ describe("Patient Creation with consultation", () => {
   const patientTransferPhoneNumber = "9849511866";
   const patientTransferFacility = "Dummy Shifting Center";
   const patientTransferName = "Dummy Patient 10";
-  const patientExternalName = "Patient 20";
   const patientOccupation = "Student";
 
   before(() => {
@@ -180,16 +178,21 @@ describe("Patient Creation with consultation", () => {
       "policy_id",
       patientOneFirstPolicyId,
     );
-    patientInsurance.typePatientInsuranceDetail(
-      patientOneFirstInsuranceId,
-      "insurer_id",
-      patientOneFirstInsurerId,
-    );
-    patientInsurance.typePatientInsuranceDetail(
-      patientOneFirstInsuranceId,
-      "insurer_name",
-      patientOneFirstInsurerName,
-    );
+    if (isHCXEnabled) {
+      patientInsurance.selectInsurer("test");
+    } else {
+      patientInsurance.typePatientInsuranceDetail(
+        patientOneFirstInsuranceId,
+        "insurer_id",
+        patientOneFirstInsurerId,
+      );
+      patientInsurance.typePatientInsuranceDetail(
+        patientOneFirstInsuranceId,
+        "insurer_name",
+        patientOneFirstInsurerName,
+      );
+    }
+
     patientInsurance.clickAddInsruanceDetails();
     patientInsurance.typePatientInsuranceDetail(
       patientOneSecondInsuranceId,
@@ -201,16 +204,21 @@ describe("Patient Creation with consultation", () => {
       "policy_id",
       patientOneSecondPolicyId,
     );
-    patientInsurance.typePatientInsuranceDetail(
-      patientOneSecondInsuranceId,
-      "insurer_id",
-      patientOneSecondInsurerId,
-    );
-    patientInsurance.typePatientInsuranceDetail(
-      patientOneSecondInsuranceId,
-      "insurer_name",
-      patientOneSecondInsurerName,
-    );
+    if (isHCXEnabled) {
+      patientInsurance.selectInsurer("Care");
+    } else {
+      patientInsurance.typePatientInsuranceDetail(
+        patientOneSecondInsuranceId,
+        "insurer_id",
+        patientOneSecondInsurerId,
+      );
+      patientInsurance.typePatientInsuranceDetail(
+        patientOneSecondInsuranceId,
+        "insurer_name",
+        patientOneSecondInsurerName,
+      );
+    }
+
     patientPage.clickUpdatePatient();
     cy.wait(3000);
     patientPage.verifyPatientUpdated();
@@ -231,15 +239,9 @@ describe("Patient Creation with consultation", () => {
     patientMedicalHistory.verifyNoSymptosPresent("Diabetes");
     // verify insurance details and dedicatd page
     cy.get("[data-testid=patient-details]")
-      .contains(patientOneFirstSubscriberId)
+      .contains("member id")
       .scrollIntoView();
     cy.wait(2000);
-    patientInsurance.verifyPatientPolicyDetails(
-      patientOneFirstSubscriberId,
-      patientOneFirstPolicyId,
-      patientOneFirstInsurerId,
-      patientOneFirstInsurerName,
-    );
     patientInsurance.clickPatientInsuranceViewDetail();
     cy.wait(3000);
     patientInsurance.verifyPatientPolicyDetails(
@@ -247,12 +249,14 @@ describe("Patient Creation with consultation", () => {
       patientOneFirstPolicyId,
       patientOneFirstInsurerId,
       patientOneFirstInsurerName,
+      isHCXEnabled,
     );
     patientInsurance.verifyPatientPolicyDetails(
       patientOneSecondSubscriberId,
       patientOneSecondPolicyId,
       patientOneSecondInsurerId,
       patientOneSecondInsurerName,
+      isHCXEnabled,
     );
   });
 
@@ -287,31 +291,6 @@ describe("Patient Creation with consultation", () => {
     cy.verifyNotification(
       "Patient - Patient transfer cannot be completed because the patient has an active consultation in the same facility",
     );
-  });
-
-  it("Patient Registration using External Result Import", () => {
-    // copy the patient external ID from external results
-    cy.awaitUrl("/external_results");
-    patientExternal.verifyExternalListPatientName(patientExternalName);
-    patientExternal.verifyExternalIdVisible();
-    // cypress have a limitation to work only asynchronously
-    // import the result and create a new patient
-    let extractedId = "";
-    cy.get("#patient-external-id")
-      .invoke("text")
-      .then((text) => {
-        extractedId = text.split("Care external results ID: ")[1];
-        cy.log(`Extracted Care external results ID: ${extractedId}`);
-        cy.awaitUrl("/patients");
-        patientPage.createPatient();
-        patientPage.selectFacility(patientFacility);
-        patientPage.patientformvisibility();
-        patientExternal.clickImportFromExternalResultsButton();
-        patientExternal.typeCareExternalResultId(extractedId);
-        patientExternal.clickImportPatientData();
-      });
-    // verify the patient is successfully created
-    patientExternal.verifyExternalPatientName(patientExternalName);
   });
 
   afterEach(() => {

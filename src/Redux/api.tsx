@@ -1,27 +1,8 @@
 import {
   ConsentRequestModel,
   CreateConsentTBody,
-} from "../Components/ABDM/types/consent";
-import { HealthInformationModel } from "../Components/ABDM/types/health-information";
-import {
-  IAadhaarOtp,
-  IAadhaarOtpTBody,
-  ICheckAndGenerateMobileOtp,
-  IConfirmMobileOtp,
-  IcreateHealthFacilityTBody,
-  ICreateHealthIdRequest,
-  ICreateHealthIdResponse,
-  IGenerateMobileOtpTBody,
-  IgetAbhaCardTBody,
-  IHealthFacility,
-  IHealthId,
-  IinitiateAbdmAuthenticationTBody,
-  ILinkABHANumber,
-  ILinkViaQRBody,
-  IpartialUpdateHealthFacilityTBody,
-  ISearchByHealthIdTBody,
-  IVerifyAadhaarOtpTBody,
-} from "../Components/ABDM/models";
+} from "@/components/ABDM/types/consent";
+import { HealthInformationModel } from "@/components/ABDM/types/health-information";
 import {
   AssetBedBody,
   AssetBedModel,
@@ -32,19 +13,11 @@ import {
   AssetTransaction,
   AvailabilityRecord,
   PatientAssetBed,
-} from "../Components/Assets/AssetTypes";
-import {
-  IDeleteBedCapacity,
-  IDeleteExternalResult,
-  IExternalResult,
-  IExternalResultCsv,
-  ILocalBodies,
-  ILocalBodyByDistrict,
-  IPartialUpdateExternalResult,
-} from "../Components/ExternalResult/models";
+} from "@/components/Assets/AssetTypes";
 import {
   BedModel,
   CapacityModal,
+  CommentModel,
   ConsultationModel,
   CreateBedBody,
   CurrentBed,
@@ -52,66 +25,82 @@ import {
   DailyRoundsRes,
   DistrictModel,
   DoctorModal,
-  DupPatientModel,
   FacilityModel,
   FacilityRequest,
+  FacilitySpokeModel,
+  FacilitySpokeRequest,
   IFacilityNotificationRequest,
   IFacilityNotificationResponse,
+  IUserFacilityRequest,
   InventoryItemsModel,
   InventoryLogResponse,
   InventorySummaryResponse,
-  IUserFacilityRequest,
   LocalBodyModel,
   LocationModel,
   MinimumQuantityItemResponse,
-  PatientConsentModel,
   PatientNotesEditModel,
   PatientNotesModel,
   PatientStatsModel,
-  PatientTransferRequest,
   PatientTransferResponse,
+  ResourceModel,
+  ShiftingModel,
   StateModel,
   WardModel,
-} from "../Components/Facility/models";
-import { MedibaseMedicine, Prescription } from "../Components/Medicine/models";
+} from "@/components/Facility/models";
 import {
-  NotificationData,
-  PNconfigData,
-} from "../Components/Notifications/models";
-import {
-  CreateFileRequest,
-  CreateFileResponse,
   DailyRoundsModel,
-  FileUploadModel,
   PatientModel,
   SampleReportModel,
   SampleTestModel,
-} from "../Components/Patient/models";
+} from "@/components/Patient/models";
+import {
+  IDeleteBedCapacity,
+  ILocalBodies,
+  ILocalBodyByDistrict,
+} from "@/components/ExternalResult/models";
+import {
+  InvestigationGroup,
+  InvestigationType,
+} from "@/components/Facility/Investigations";
+import {
+  DupPatientModel,
+  PatientConsentModel,
+  PatientTransferRequest,
+} from "@/components/Facility/models";
+import { MedibaseMedicine, Prescription } from "@/components/Medicine/models";
+import {
+  NotificationData,
+  PNconfigData,
+} from "@/components/Notifications/models";
+import { HCXPolicyModel } from "@/components/HCX/models";
+import { ICD11DiagnosisModel } from "@/components/Diagnosis/types";
+import { Investigation } from "@/components/Facility/Investigations/Reports/types";
+import { PaginatedResponse } from "../Utils/request/types";
+import {
+  CreateFileRequest,
+  CreateFileResponse,
+  FileUploadModel,
+} from "@/components/Patient/models";
 import {
   SkillModel,
   SkillObjectModel,
   UpdatePasswordForm,
   UserAssignedModel,
   UserModel,
-} from "../Components/Users/models";
-import { PaginatedResponse } from "../Utils/request/types";
-
-import { ICD11DiagnosisModel } from "../Components/Diagnosis/types";
+} from "@/components/Users/models";
 import {
   EventGeneric,
   type Type,
-} from "../Components/Facility/ConsultationDetails/Events/types";
+} from "@/components/Facility/ConsultationDetails/Events/types";
+import { InvestigationSessionType } from "@/components/Facility/Investigations/investigationsTab";
+import { AbhaNumberModel } from "@/components/ABDM/types/abha";
+import { ScribeModel } from "@/components/Scribe/Scribe";
 import {
-  InvestigationGroup,
-  InvestigationType,
-} from "../Components/Facility/Investigations";
-import { InvestigationSessionType } from "../Components/Facility/Investigations/investigationsTab";
-import { Investigation } from "../Components/Facility/Investigations/Reports/types";
-import { HCXPolicyModel } from "../Components/HCX/models";
-import { IComment, IResource } from "../Components/Resource/models";
-import { IShift } from "../Components/Shifting/models";
-import { AbhaNumberModel } from "../Components/ABDM/types/abha";
-import { ScribeModel } from "../Components/Scribe/Scribe";
+  IcreateHealthFacilityTBody,
+  IHealthFacility,
+  IpartialUpdateHealthFacilityTBody,
+} from "@/components/ABDM/types/health-facility";
+import { InsurerOptionModel } from "@/components/HCX/InsurerAutocomplete";
 
 /**
  * A fake function that returns an empty object casted to type T
@@ -295,6 +284,19 @@ const routes = {
     TBody: Type<Partial<UserModel>>(),
   },
 
+  updateProfilePicture: {
+    path: "/api/v1/users/{username}/profile_picture/",
+    method: "PATCH",
+    TRes: Type<UserModel>(),
+    TBody: Type<{ profile_picture_url: string }>(),
+  },
+
+  deleteProfilePicture: {
+    path: "/api/v1/users/{username}/profile_picture/",
+    method: "DELETE",
+    TRes: Type<UserModel>(),
+  },
+
   deleteUser: {
     path: "/api/v1/users/{username}/",
     method: "DELETE",
@@ -357,7 +359,7 @@ const routes = {
   getPermittedFacility: {
     path: "/api/v1/facility/{id}/",
     method: "GET",
-    TRes: Type<FacilityRequest>(),
+    TRes: Type<FacilityModel>(),
   },
 
   getAnyFacility: {
@@ -378,6 +380,44 @@ const routes = {
     method: "PATCH",
     TRes: Type<FacilityModel>(),
     TBody: Type<Partial<FacilityModel>>(),
+  },
+
+  getFacilityHubs: {
+    path: "/api/v1/facility/{id}/hubs",
+    method: "GET",
+    TRes: Type<PaginatedResponse<FacilitySpokeModel>>(),
+  },
+
+  getFacilitySpokes: {
+    path: "/api/v1/facility/{id}/spokes/",
+    method: "GET",
+    TRes: Type<PaginatedResponse<FacilitySpokeModel>>(),
+  },
+
+  updateFacilitySpokes: {
+    path: "/api/v1/facility/{id}/spokes/{spoke_id}/",
+    method: "PATCH",
+    TRes: Type<FacilitySpokeModel>(),
+    TBody: Type<FacilitySpokeRequest>(),
+  },
+
+  getFacilitySpoke: {
+    path: "/api/v1/facility/{id}/spokes/{spoke_id}/",
+    method: "GET",
+    TRes: Type<FacilitySpokeModel>(),
+  },
+
+  createFacilitySpoke: {
+    path: "/api/v1/facility/{id}/spokes/",
+    method: "POST",
+    TRes: Type<FacilitySpokeModel>(),
+    TBody: Type<Partial<FacilitySpokeRequest>>(),
+  },
+
+  deleteFacilitySpoke: {
+    path: "/api/v1/facility/{id}/spokes/{spoke_id}/",
+    method: "DELETE",
+    TRes: Type<Record<string, never>>(),
   },
 
   deleteFacilityCoverImage: {
@@ -534,24 +574,29 @@ const routes = {
   downloadFacility: {
     path: "/api/v1/facility/?csv",
     method: "GET",
+    TRes: Type<string>(),
   },
   downloadFacilityCapacity: {
     path: "/api/v1/facility/?csv&capacity",
     method: "GET",
+    TRes: Type<string>(),
   },
   downloadFacilityDoctors: {
     path: "/api/v1/facility/?csv&doctors",
     method: "GET",
+    TRes: Type<string>(),
   },
 
   downloadFacilityTriage: {
     path: "/api/v1/facility/?csv&triage",
     method: "GET",
+    TRes: Type<string>(),
   },
 
   downloadPatients: {
     path: "/api/v1/patient/?csv",
     method: "GET",
+    TRes: Type<string>(),
   },
   getConsultationList: {
     path: "/api/v1/consultation/",
@@ -765,7 +810,10 @@ const routes = {
     method: "POST",
     TRes: Type<PatientNotesModel>(),
     TBody: Type<
-      Pick<PatientNotesModel, "note" | "thread"> & { consultation?: string }
+      Pick<PatientNotesModel, "note" | "thread"> & {
+        consultation?: string;
+        reply_to?: string;
+      }
     >(),
   },
   updatePatientNote: {
@@ -795,42 +843,6 @@ const routes = {
     TRes: Type<SampleReportModel>(),
   },
 
-  // External Results
-  externalResultList: {
-    path: "/api/v1/external_result/",
-    method: "GET",
-    TRes: Type<PaginatedResponse<IExternalResult>>(),
-  },
-  externalResult: {
-    path: "/api/v1/external_result/{id}/",
-    method: "GET",
-    TRes: Type<IExternalResult>(),
-  },
-  externalResultUploadCsv: {
-    path: "/api/v1/external_result/bulk_upsert/",
-    method: "POST",
-    TBody: Type<IExternalResultCsv>(),
-    TRes: Type<IExternalResult[]>(),
-  },
-
-  deleteExternalResult: {
-    path: "/api/v1/external_result/{id}/",
-    method: "DELETE",
-    TRes: Type<IDeleteExternalResult>(),
-  },
-
-  updateExternalResult: {
-    path: "/api/v1/external_result/{id}/",
-    method: "PUT",
-  },
-
-  partialUpdateExternalResult: {
-    path: "/api/v1/external_result/{id}/",
-    method: "PATCH",
-    TRes: Type<IPartialUpdateExternalResult>(),
-    TBody: Type<IPartialUpdateExternalResult>(),
-  },
-
   // States
   statesList: {
     path: "/api/v1/state/",
@@ -857,6 +869,8 @@ const routes = {
   },
   getDistrictByName: {
     path: "/api/v1/district/",
+    method: "GET",
+    TRes: Type<PaginatedResponse<DistrictModel>>(),
   },
   getAllLocalBodyByDistrict: {
     path: "/api/v1/district/{id}/get_all_local_body/",
@@ -1041,14 +1055,14 @@ const routes = {
   createShift: {
     path: "/api/v1/shift/",
     method: "POST",
-    TBody: Type<Partial<IShift>>(),
+    TBody: Type<Partial<ShiftingModel>>(),
     TRes: Type<PatientModel>(),
   },
   updateShift: {
     path: "/api/v1/shift/{id}/",
     method: "PUT",
-    TBody: Type<IShift>(),
-    TRes: Type<IShift>(),
+    TBody: Type<ShiftingModel>(),
+    TRes: Type<ShiftingModel>(),
   },
   deleteShiftRecord: {
     path: "/api/v1/shift/{id}/",
@@ -1058,33 +1072,34 @@ const routes = {
   listShiftRequests: {
     path: "/api/v1/shift/",
     method: "GET",
-    TRes: Type<PaginatedResponse<IShift>>(),
+    TRes: Type<PaginatedResponse<ShiftingModel>>(),
   },
   getShiftDetails: {
     path: "/api/v1/shift/{id}/",
     method: "GET",
-    TRes: Type<IShift>(),
+    TRes: Type<ShiftingModel>(),
   },
   completeTransfer: {
     path: "/api/v1/shift/{externalId}/transfer/",
     method: "POST",
-    TBody: Type<IShift>(),
+    TBody: Type<ShiftingModel>(),
     TRes: Type<Partial<PatientModel>>(),
   },
   downloadShiftRequests: {
     path: "/api/v1/shift/",
     method: "GET",
+    TRes: Type<string>(),
   },
   getShiftComments: {
     path: "/api/v1/shift/{id}/comment/",
     method: "GET",
-    TRes: Type<PaginatedResponse<IComment>>(),
+    TRes: Type<PaginatedResponse<CommentModel>>(),
   },
   addShiftComments: {
     path: "/api/v1/shift/{id}/comment/",
     method: "POST",
-    TBody: Type<Partial<IComment>>(),
-    TRes: Type<IComment>(),
+    TBody: Type<Partial<CommentModel>>(),
+    TRes: Type<CommentModel>(),
   },
 
   // Notifications
@@ -1117,7 +1132,7 @@ const routes = {
     path: "/api/v1/notification/notify/",
     method: "POST",
     TRes: Type<IFacilityNotificationResponse>(),
-    Tbody: Type<IFacilityNotificationRequest>(),
+    TBody: Type<IFacilityNotificationRequest>(),
   },
 
   // FileUpload Create
@@ -1216,14 +1231,14 @@ const routes = {
   createResource: {
     path: "/api/v1/resource/",
     method: "POST",
-    TRes: Type<IResource>(),
-    TBody: Type<Partial<IResource>>(),
+    TRes: Type<ResourceModel>(),
+    TBody: Type<Partial<ResourceModel>>(),
   },
   updateResource: {
     path: "/api/v1/resource/{id}/",
     method: "PUT",
-    TRes: Type<IResource>(),
-    TBody: Type<Partial<IResource>>(),
+    TRes: Type<ResourceModel>(),
+    TBody: Type<Partial<ResourceModel>>(),
   },
   deleteResourceRecord: {
     path: "/api/v1/resource/{id}/",
@@ -1235,27 +1250,28 @@ const routes = {
   listResourceRequests: {
     path: "/api/v1/resource/",
     method: "GET",
-    TRes: Type<PaginatedResponse<IResource>>(),
+    TRes: Type<PaginatedResponse<ResourceModel>>(),
   },
   getResourceDetails: {
     path: "/api/v1/resource/{id}/",
     method: "GET",
-    TRes: Type<IResource>(),
+    TRes: Type<ResourceModel>(),
   },
   downloadResourceRequests: {
     path: "/api/v1/resource/",
     method: "GET",
+    TRes: Type<string>(),
   },
   getResourceComments: {
     path: "/api/v1/resource/{id}/comment/",
     method: "GET",
-    TRes: Type<PaginatedResponse<IComment>>(),
+    TRes: Type<PaginatedResponse<CommentModel>>(),
   },
   addResourceComments: {
     path: "/api/v1/resource/{id}/comment/",
     method: "POST",
-    TRes: Type<IComment>(),
-    TBody: Type<Partial<IComment>>(),
+    TRes: Type<CommentModel>(),
+    TBody: Type<Partial<CommentModel>>(),
   },
 
   // Assets endpoints
@@ -1342,196 +1358,243 @@ const routes = {
     TBody: Type<AssetServiceUpdate>(),
   },
 
-  abha: {
-    getAbhaNumber: {
-      path: "/api/v1/abdm/abha_numbers/{abhaNumberId}/",
-      method: "GET",
-      TRes: Type<AbhaNumberModel>(),
+  abdm: {
+    consent: {
+      list: {
+        path: "/api/abdm/consent/",
+        method: "GET",
+        TRes: Type<PaginatedResponse<ConsentRequestModel>>(),
+      },
+
+      create: {
+        path: "/api/abdm/consent/",
+        method: "POST",
+        TRes: Type<ConsentRequestModel>(),
+        TBody: Type<CreateConsentTBody>(),
+      },
+
+      get: {
+        path: "/api/abdm/consent/{id}/",
+        method: "GET",
+      },
+
+      checkStatus: {
+        path: "/api/abdm/v3/hiu/consent_request_status/",
+        method: "POST",
+        TBody: Type<{
+          consent_request: string;
+        }>(),
+        TRes: Type<{
+          detail: string;
+        }>(),
+      },
     },
 
-    // ABDM HealthID endpoints
-    generateAadhaarOtp: {
-      path: "/api/v1/abdm/healthid/generate_aadhaar_otp/",
-      method: "POST",
-      TRes: Type<IAadhaarOtp>(),
-      TBody: Type<IAadhaarOtpTBody>(),
+    healthInformation: {
+      get: {
+        path: "/api/abdm/health_information/{artefactId}",
+        method: "GET",
+        TRes: Type<HealthInformationModel>(),
+      },
     },
 
-    resendAadhaarOtp: {
-      path: "/api/v1/abdm/healthid/resend_aadhaar_otp/",
-      method: "POST",
-      TRes: Type<IAadhaarOtp>(),
-      TBody: Type<IAadhaarOtp>(),
+    healthFacility: {
+      list: {
+        path: "/api/abdm/health_facility/",
+        method: "GET",
+      },
+
+      create: {
+        path: "/api/abdm/health_facility/",
+        method: "POST",
+        TRes: Type<IHealthFacility>(),
+        TBody: Type<IcreateHealthFacilityTBody>(),
+      },
+
+      get: {
+        path: "/api/abdm/health_facility/{facility_id}/",
+        method: "GET",
+        TRes: Type<IHealthFacility>(),
+      },
+
+      update: {
+        path: "/api/abdm/health_facility/{facility_id}/",
+        method: "PUT",
+        TRes: Type<IHealthFacility>(),
+        TBody: Type<IcreateHealthFacilityTBody>(),
+      },
+
+      partialUpdate: {
+        path: "/api/abdm/health_facility/{facility_id}/",
+        method: "PATCH",
+        TRes: Type<IHealthFacility>(),
+        TBody: Type<IpartialUpdateHealthFacilityTBody>(),
+      },
+
+      registerAsService: {
+        path: "/api/abdm/health_facility/{facility_id}/register_service/",
+        method: "POST",
+        TRes: Type<IHealthFacility>(),
+        TBody: Type<IcreateHealthFacilityTBody>(),
+      },
     },
 
-    verifyAadhaarOtp: {
-      path: "/api/v1/abdm/healthid/verify_aadhaar_otp/",
-      method: "POST",
-      TRes: Type<IAadhaarOtp>(),
-      TBody: Type<IVerifyAadhaarOtpTBody>(),
+    abhaNumber: {
+      get: {
+        path: "/api/abdm/abha_number/{abhaNumberId}/",
+        method: "GET",
+        TRes: Type<AbhaNumberModel>(),
+      },
+      create: {
+        path: "/api/abdm/abha_number/",
+        method: "POST",
+        TBody: Type<Partial<AbhaNumberModel>>(),
+        TRes: Type<AbhaNumberModel>(),
+      },
     },
 
-    generateMobileOtp: {
-      path: "/api/v1/abdm/healthid/generate_mobile_otp/",
-      method: "POST",
-      TRes: Type<unknown>(),
-      TBody: Type<unknown>(),
-    },
+    healthId: {
+      abhaCreateSendAadhaarOtp: {
+        path: "/api/abdm/v3/health_id/create/send_aadhaar_otp/",
+        method: "POST",
+        TBody: Type<{
+          aadhaar: string;
+          transaction_id?: string;
+        }>(),
+        TRes: Type<{
+          transaction_id: string;
+          detail: string;
+        }>(),
+      },
 
-    checkAndGenerateMobileOtp: {
-      path: "/api/v1/abdm/healthid/check_and_generate_mobile_otp/",
-      method: "POST",
-      TRes: Type<ICheckAndGenerateMobileOtp>(),
-      TBody: Type<IGenerateMobileOtpTBody>(),
-    },
+      abhaCreateVerifyAadhaarOtp: {
+        path: "/api/abdm/v3/health_id/create/verify_aadhaar_otp/",
+        method: "POST",
+        TBody: Type<{
+          transaction_id: string;
+          otp: string;
+          mobile: string;
+        }>(),
+        TRes: Type<{
+          transaction_id: string;
+          detail: string;
+          is_new: boolean;
+          abha_number: AbhaNumberModel;
+        }>(),
+      },
 
-    // TODO: resend mobile otp
-    verifyMobileOtp: {
-      path: "/api/v1/abdm/healthid/verify_mobile_otp/",
-      method: "POST",
-      TRes: Type<IAadhaarOtp>(),
-      TBody: Type<IVerifyAadhaarOtpTBody>(),
-    },
+      abhaCreateLinkMobileNumber: {
+        path: "/api/abdm/v3/health_id/create/link_mobile_number/",
+        method: "POST",
+        TBody: Type<{
+          transaction_id: string;
+          mobile: string;
+        }>(),
+        TRes: Type<{
+          transaction_id: string;
+          detail: string;
+        }>(),
+      },
 
-    createHealthId: {
-      path: "/api/v1/abdm/healthid/create_health_id/",
-      method: "POST",
-      TRes: Type<ICreateHealthIdResponse>(),
-      TBody: Type<ICreateHealthIdRequest>(),
-    },
+      abhaCreateVerifyMobileNumber: {
+        path: "/api/abdm/v3/health_id/create/verify_mobile_otp/",
+        method: "POST",
+        TBody: Type<{
+          transaction_id: string;
+          otp: string;
+        }>(),
+        TRes: Type<{
+          transaction_id: string;
+          detail: string;
+        }>(),
+      },
 
-    linkPatient: {
-      path: "/api/v1/abdm/healthid/link_patient/",
-      method: "POST",
-      TBody: Type<{ abha_number: string; patient: string }>(),
-      TRes: Type<AbhaNumberModel>(),
-    },
+      abhaCreateAbhaAddressSuggestion: {
+        path: "/api/abdm/v3/health_id/create/abha_address_suggestion/",
+        method: "POST",
+        TBody: Type<{
+          transaction_id: string;
+        }>(),
+        TRes: Type<{
+          transaction_id: string;
+          abha_addresses: string[];
+        }>(),
+      },
 
-    searchByHealthId: {
-      path: "/api/v1/abdm/healthid/search_by_health_id/",
-      method: "POST",
-      TRes: Type<IHealthId>(),
-      TBody: Type<ISearchByHealthIdTBody>(),
-    },
+      abhaCreateEnrolAbhaAddress: {
+        path: "/api/abdm/v3/health_id/create/enrol_abha_address/",
+        method: "POST",
+        TBody: Type<{
+          transaction_id: string;
+          abha_address: string;
+        }>(),
+        TRes: Type<{
+          detail?: string;
+          transaction_id: string;
+          health_id: string;
+          preferred_abha_address: string;
+          abha_number: AbhaNumberModel;
+        }>(),
+      },
 
-    initiateAbdmAuthentication: {
-      path: "/api/v1/abdm/healthid/auth_init/",
-      method: "POST",
-      TRes: Type<IConfirmMobileOtp>(),
-      TBody: Type<IinitiateAbdmAuthenticationTBody>(),
-    },
+      linkAbhaNumberAndPatient: {
+        path: "/api/abdm/v3/health_id/link_patient/",
+        method: "POST",
+        TBody: Type<{
+          abha_number: string;
+          patient: string;
+        }>(),
+        TRes: Type<{
+          detail: string;
+        }>(),
+      },
 
-    confirmWithAadhaarOtp: {
-      path: "/api/v1/abdm/healthid/confirm_with_aadhaar_otp/",
-      method: "POST",
-      TRes: Type<IConfirmMobileOtp>(),
-      TBody: Type<IConfirmMobileOtp>(),
-    },
+      abhaLoginCheckAuthMethods: {
+        path: "/api/abdm/v3/health_id/login/check_auth_methods/",
+        method: "POST",
+        TBody: Type<{
+          abha_address: string;
+        }>(),
+        TRes: Type<{
+          abha_number: string;
+          auth_methods: string[];
+        }>(),
+      },
 
-    confirmWithMobileOtp: {
-      path: "/api/v1/abdm/healthid/confirm_with_mobile_otp/",
-      method: "POST",
-      TRes: Type<IConfirmMobileOtp>(),
-      TBody: Type<IConfirmMobileOtp>(),
-    },
+      abhaLoginSendOtp: {
+        path: "/api/abdm/v3/health_id/login/send_otp/",
+        method: "POST",
+        TBody: Type<{
+          type: "abha-number" | "abha-address" | "mobile" | "aadhaar";
+          value: string;
+          otp_system: "abdm" | "aadhaar";
+        }>(),
+        TRes: Type<{
+          transaction_id: string;
+          detail: string;
+        }>(),
+      },
 
-    linkViaQR: {
-      path: "/api/v1/abdm/healthid/link_via_qr/",
-      method: "POST",
-      TRes: Type<ILinkABHANumber>(),
-      TBody: Type<ILinkViaQRBody>(),
-    },
+      abhaLoginVerifyOtp: {
+        path: "/api/abdm/v3/health_id/login/verify_otp/",
+        method: "POST",
+        TBody: Type<{
+          type: "abha-number" | "abha-address" | "mobile" | "aadhaar";
+          otp: string;
+          transaction_id: string;
+          otp_system: "abdm" | "aadhaar";
+        }>(),
+        TRes: Type<{
+          abha_number: AbhaNumberModel;
+          created: boolean;
+        }>(),
+      },
 
-    linkCareContext: {
-      path: "/api/v1/abdm/healthid/add_care_context/",
-      method: "POST",
-      TRes: Type<unknown>(),
-      TBody: Type<unknown>(),
-    },
-
-    getAbhaCard: {
-      path: "/api/v1/abdm/healthid/get_abha_card/",
-      method: "POST",
-      TRes: Type<unknown>(),
-      TBody: Type<IgetAbhaCardTBody>(),
-    },
-
-    // ABDM Health Facility
-
-    listHealthFacility: {
-      path: "/api/v1/abdm/health_facility/",
-      method: "GET",
-    },
-
-    createHealthFacility: {
-      path: "/api/v1/abdm/health_facility/",
-      method: "POST",
-      TRes: Type<IHealthFacility>(),
-      TBody: Type<IcreateHealthFacilityTBody>(),
-    },
-
-    getHealthFacility: {
-      path: "/api/v1/abdm/health_facility/{facility_id}/",
-      method: "GET",
-      TRes: Type<IHealthFacility>(),
-    },
-
-    updateHealthFacility: {
-      path: "/api/v1/abdm/health_facility/{facility_id}/",
-      method: "PUT",
-      TRes: Type<IHealthFacility>(),
-      TBody: Type<IcreateHealthFacilityTBody>(),
-    },
-
-    partialUpdateHealthFacility: {
-      path: "/api/v1/abdm/health_facility/{facility_id}/",
-      method: "PATCH",
-      TRes: Type<IHealthFacility>(),
-      TBody: Type<IpartialUpdateHealthFacilityTBody>(),
-    },
-
-    registerHealthFacilityAsService: {
-      path: "/api/v1/abdm/health_facility/{facility_id}/register_service/",
-      method: "POST",
-      TRes: Type<IHealthFacility>(),
-      TBody: Type<IcreateHealthFacilityTBody>(),
-    },
-
-    listConsents: {
-      path: "/api/v1/abdm/consent/",
-      method: "GET",
-      TRes: Type<PaginatedResponse<ConsentRequestModel>>(),
-    },
-
-    createConsent: {
-      path: "/api/v1/abdm/consent/",
-      method: "POST",
-      TRes: Type<ConsentRequestModel>(),
-      TBody: Type<CreateConsentTBody>(),
-    },
-
-    getConsent: {
-      path: "/api/v1/abdm/consent/{id}/",
-      method: "GET",
-    },
-
-    checkConsentStatus: {
-      path: "/api/v1/abdm/consent/{id}/status/",
-      method: "GET",
-      TRes: Type<void>(),
-    },
-
-    getHealthInformation: {
-      path: "/api/v1/abdm/health_information/{artefactId}",
-      method: "GET",
-      TRes: Type<HealthInformationModel>(),
-    },
-
-    findPatient: {
-      path: "/api/v1/abdm/patients/find/",
-      method: "POST",
-      TRes: Type<unknown>(),
-      TBody: Type<{ id: string }>(),
+      getAbhaCard: {
+        path: "/api/abdm/v3/health_id/abha_card",
+        method: "GET",
+        TRes: Type<Blob>(),
+      },
     },
   },
 
@@ -1579,89 +1642,55 @@ const routes = {
   },
 
   // HCX Endpoints
+  hcx: {
+    policies: {
+      list: {
+        path: "/api/hcx/policy/",
+        method: "GET",
+        TRes: Type<PaginatedResponse<HCXPolicyModel>>(),
+      },
 
-  listPMJYPackages: {
-    path: "/api/v1/hcx/pmjy_packages/",
-    method: "GET",
-  },
+      create: {
+        path: "/api/hcx/policy/",
+        method: "POST",
+        TRes: Type<HCXPolicyModel>(),
+      },
 
-  hcxListPayors: {
-    path: "/api/v1/hcx/payors/",
-    method: "GET",
-  },
+      get: {
+        path: "/api/hcx/policy/{external_id}/",
+        method: "GET",
+      },
 
-  hcxCheckEligibility: {
-    path: "/api/v1/hcx/check_eligibility/",
-    method: "POST",
-    TRes: Type<HCXPolicyModel>(),
-  },
+      update: {
+        path: "/api/hcx/policy/{external_id}/",
+        method: "PUT",
+        TRes: Type<HCXPolicyModel>(),
+      },
 
-  listHCXPolicies: {
-    path: "/api/v1/hcx/policy/",
-    method: "GET",
-    TRes: Type<PaginatedResponse<HCXPolicyModel>>(),
-  },
+      partialUpdate: {
+        path: "/api/hcx/policy/{external_id}/",
+        method: "PATCH",
+      },
 
-  createHCXPolicy: {
-    path: "/api/v1/hcx/policy/",
-    method: "POST",
-    TRes: Type<HCXPolicyModel>(),
-  },
+      delete: {
+        path: "/api/hcx/policy/{external_id}/",
+        method: "DELETE",
+        TRes: Type<Record<string, never>>(),
+      },
 
-  getHCXPolicy: {
-    path: "/api/v1/hcx/policy/{external_id}/",
-    method: "GET",
-  },
+      listPayors: {
+        path: "/api/hcx/payors/",
+        method: "GET",
+        TRes: Type<InsurerOptionModel[]>(),
+      },
 
-  updateHCXPolicy: {
-    path: "/api/v1/hcx/policy/{external_id}/",
-    method: "PUT",
-    TRes: Type<HCXPolicyModel>(),
-  },
-
-  partialUpdateHCXPolicy: {
-    path: "/api/v1/hcx/policy/{external_id}/",
-    method: "PATCH",
-  },
-
-  deleteHCXPolicy: {
-    path: "/api/v1/hcx/policy/{external_id}/",
-    method: "DELETE",
-  },
-
-  listHCXClaims: {
-    path: "/api/v1/hcx/claim/",
-    method: "GET",
-  },
-
-  createHCXClaim: {
-    path: "/api/v1/hcx/claim/",
-    method: "POST",
-  },
-
-  getHCXClaim: {
-    path: "/api/v1/hcx/claim/{external_id}/",
-    method: "GET",
-  },
-
-  updateHCXClaim: {
-    path: "/api/v1/hcx/claim/{external_id}/",
-    method: "PUT",
-  },
-
-  partialUpdateHCXClaim: {
-    path: "/api/v1/hcx/claim/{external_id}/",
-    method: "PATCH",
-  },
-
-  deleteHCXClaim: {
-    path: "/api/v1/hcx/claim/{external_id}/",
-    method: "DELETE",
-  },
-
-  hcxMakeClaim: {
-    path: "/api/v1/hcx/make_claim/",
-    method: "POST",
+      checkEligibility: {
+        path: "/api/hcx/check_eligibility/",
+        method: "POST",
+        TBody: Type<{ policy: string }>(),
+        TRes: Type<HCXPolicyModel>(),
+      },
+    },
   },
 } as const;
 

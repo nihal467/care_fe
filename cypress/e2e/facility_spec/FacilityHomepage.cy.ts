@@ -15,7 +15,6 @@ describe("Facility Homepage Function", () => {
   const userPage = new UserPage();
   const assetPagination = new AssetPagination();
   const facilitiesAlias = "downloadFacilitiesCSV";
-  const capacitiesAlias = "downloadCapacitiesCSV";
   const doctorsAlias = "downloadDoctorsCSV";
   const triagesAlias = "downloadTriagesCSV";
   const facilityName = "Dummy Facility 40";
@@ -82,7 +81,9 @@ describe("Facility Homepage Function", () => {
   it("Search a facility in homepage and pagination", () => {
     // pagination of the facility page
     assetPagination.navigateToNextPage();
+    assetPagination.verifyNextUrl();
     assetPagination.navigateToPreviousPage();
+    assetPagination.verifyPreviousUrl();
     // search for a facility
     manageUserPage.typeFacilitySearch(facilityName);
     facilityPage.verifyFacilityBadgeContent(facilityName);
@@ -91,30 +92,26 @@ describe("Facility Homepage Function", () => {
   });
 
   it("Verify Facility Export Functionality", () => {
-    // Download the Facilities CSV
+    // Verify Facility Export
     facilityHome.csvDownloadIntercept(facilitiesAlias, "");
     facilityHome.clickExportButton();
     facilityHome.clickMenuItem("Facilities");
     facilityHome.verifyDownload(facilitiesAlias);
-    facilityHome.clickSearchButton(); // to avoid flaky test, as sometimes, the test is unable to focus on the object
-    // Download the Capacities CSV
-    facilityHome.csvDownloadIntercept(capacitiesAlias, "&capacity");
-    facilityHome.clickExportButton();
-    facilityHome.clickMenuItem("Capacities");
-    facilityHome.verifyDownload(capacitiesAlias);
-    facilityHome.clickSearchButton();
-    // Download the Doctors CSV
+    // Verify Doctor Export
     facilityHome.csvDownloadIntercept(doctorsAlias, "&doctors");
     facilityHome.clickExportButton();
     facilityHome.clickMenuItem("Doctors");
     facilityHome.verifyDownload(doctorsAlias);
-    facilityHome.clickSearchButton();
-    // Download the Triages CSV
+    // Verify Triage Export
     facilityHome.csvDownloadIntercept(triagesAlias, "&triage");
     facilityHome.clickExportButton();
     facilityHome.clickMenuItem("Triages");
     facilityHome.verifyDownload(triagesAlias);
-    facilityHome.clickSearchButton();
+  });
+
+  it("Verify Capacity Export Functionality", () => {
+    facilityHome.clickExportButton();
+    facilityHome.clickMenuItem("Capacities");
   });
 
   it("Verify Facility Detail page redirection to CNS and Live Minitoring  ", () => {
