@@ -27,7 +27,7 @@ env:
 jobs:
   # Detect if test-related files changed
   changes:
-    if: github.repository == 'ohcnetwork/care_fe'
+    if: (github.repository == 'ohcnetwork/care_fe' || github.repository == 'nihal467/care_fe')
     runs-on: ubuntu-latest
     outputs:
       tests: ${{ steps.filter.outputs.tests }}
@@ -48,7 +48,7 @@ jobs:
 
   # Build application once and cache for all test shards
   build:
-    if: always() && github.repository == 'ohcnetwork/care_fe' && needs.changes.outputs.tests == 'true'
+    if: always() && (github.repository == 'ohcnetwork/care_fe' || github.repository == 'nihal467/care_fe') && needs.changes.outputs.tests == 'true'
     needs: changes
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -80,7 +80,7 @@ jobs:
 
   # Run E2E tests with backend integration
   test:
-    if: always() && github.repository == 'ohcnetwork/care_fe' && needs.changes.outputs.tests == 'true'
+    if: always() && (github.repository == 'ohcnetwork/care_fe' || github.repository == 'nihal467/care_fe') && needs.changes.outputs.tests == 'true'
     needs: [changes, build]
     timeout-minutes: 30
     runs-on: ubuntu-latest
@@ -226,7 +226,7 @@ jobs:
 
   # Aggregate results and create final report
   report:
-    if: always() && github.repository == 'ohcnetwork/care_fe'
+    if: always() && (github.repository == 'ohcnetwork/care_fe' || github.repository == 'nihal467/care_fe')
     needs: [changes, test]
     runs-on: ubuntu-latest
     steps:
