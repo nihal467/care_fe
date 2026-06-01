@@ -30,13 +30,20 @@ export default defineConfig({
   /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: !!process.env.CI,
 
-  retries: process.env.CI ? 2 : 0,
+  /* Retries are disabled so Trunk Flaky Tests can accurately detect flakes.
+   * Flaky tests are managed via Trunk's Quarantining feature instead. */
+  retries: 0,
   /* CI workers are controlled per-phase in the workflow (setup=1, chromium=4).
    * Locally, use all available cores. */
   workers: undefined,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: process.env.CI
-    ? [["html"], ["json", { outputFile: "test-results.json" }], ["list"]]
+    ? [
+        ["html"],
+        ["json", { outputFile: "test-results.json" }],
+        ["junit", { outputFile: "test-results/junit.xml" }],
+        ["list"],
+      ]
     : "html",
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
